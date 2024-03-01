@@ -15,8 +15,13 @@ from django.conf.urls import url
 
 from . import views
 
+# example
 urlpatterns = (
     url(r"^$", views.home),
     url(r"^dev-guide/$", views.dev_guide),
     url(r"^contact/$", views.contact),
 )
+
+urlpatterns = [
+    url(r'^$', views.hello),
+]
