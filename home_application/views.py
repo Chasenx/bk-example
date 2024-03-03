@@ -65,7 +65,7 @@ def hello(request):
 def test_json(request):
     from django.http import JsonResponse
     data = {
-        'aa': 10,
-        'bb':20
+        'name': 'baidu',
+        'url': 'https://baidu.com/'
     }
     return JsonResponse(data)
