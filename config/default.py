@@ -165,3 +165,7 @@ if locals().get("DISABLED_APPS"):
         locals()[_key] = tuple(
             [_item for _item in locals()[_key] if not _item.startswith(_app + ".")]
         )
+
+TEMPLATES[0]['DIRS'] += (
+    os.path.join(BASE_DIR, 'static', 'dist'),
+)

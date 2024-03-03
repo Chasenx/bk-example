@@ -20,8 +20,10 @@ urlpatterns = (
     url(r"^$", views.home),
     url(r"^dev-guide/$", views.dev_guide),
     url(r"^contact/$", views.contact),
+    url(r'^test-json/$', views.test_json),
 )
 
-urlpatterns = [
-    url(r'^$', views.hello),
-]
+# urlpatterns = [
+#     url(r'^$', views.hello),
+#     url(r'^test-json/$', views.test_json)
+# ]

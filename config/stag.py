@@ -49,3 +49,4 @@ if FRONTEND_BACKEND_SEPARATION:
 #     }
 # )
 
+BK_STATIC_URL = STATIC_URL + 'dist/'
