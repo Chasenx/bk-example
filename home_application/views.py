@@ -78,7 +78,7 @@ def pull_cc_data(request):
     biz_result = client.cc.search_business()
     biz_info = biz_result["data"]["info"]
     
-    biz_info = [biz_info[0]]  # for ease
+    # biz_info = [biz_info[0]]  # for ease
     for biz in biz_info:
         biz_id = biz["bk_biz_id"]
         biz_name = biz["bk_biz_name"]
@@ -87,7 +87,7 @@ def pull_cc_data(request):
         set_result = client.cc.search_set({"bk_biz_id": biz_id, "fields": ["bk_set_id", "bk_set_name"], "condition": {}, "page": {}})
         set_info = set_result["data"]["info"]
 
-        set_info = [set_info[0]]  # for ease
+        # set_info = [set_info[0]]  # for ease
         for setData in set_info:
             set_id = setData["bk_set_id"]
             set_name = setData["bk_set_name"]
@@ -96,16 +96,16 @@ def pull_cc_data(request):
             module_result = client.cc.search_module({"bk_biz_id": biz_id, "bk_set_id": set_id, "fields": ["bk_module_id", "bk_module_name"], "condition": {}, "page": {}})
             module_info = module_result["data"]["info"]
             
-            module_info = [module_info[0]]  # for ease
+            # module_info = [module_info[0]]  # for ease
             for module in module_info:
                 module_id = module["bk_module_id"]
                 module_name = module["bk_module_name"]
 
                 # 查找主机
                 # for ease
-                biz_id = 3
-                set_id = 18
-                module_id = 80
+                # biz_id = 3
+                # set_id = 18
+                # module_id = 80
                 host_result = client.cc.list_biz_hosts({
                     "bk_biz_id": biz_id, 
                     "bk_set_ids": [set_id],
@@ -141,7 +141,7 @@ def pull_cc_data(request):
                         hostORM = Host.objects.filter(host_id=host_id).update(**orm_data)
                     else:
                         hostORM = Host.objects.create(**orm_data)
-                
+
 
 def sync_cmdb(request):
     """
