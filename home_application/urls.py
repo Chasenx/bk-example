@@ -21,6 +21,11 @@ urlpatterns = (
     url(r"^dev-guide/$", views.dev_guide),
     url(r"^contact/$", views.contact),
     url(r'^test-json/$', views.test_json),
+    url(r'^sync-cmdb/$', views.sync_cmdb),
+    url(r'^business/$', views.get_business),
+    url(r'^set$', views.get_sets_by_biz),
+    url(r'^module$', views.get_modules_by_set),
+    url(r'^hosts$', views.get_hosts),
 )
 
 # urlpatterns = [
