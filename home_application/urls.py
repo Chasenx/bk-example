@@ -26,6 +26,7 @@ urlpatterns = (
     url(r'^set$', views.get_sets_by_biz),
     url(r'^module$', views.get_modules_by_set),
     url(r'^hosts$', views.get_hosts),
+    url(r'^host-info$', views.get_host_info),
 )
 
 # urlpatterns = [

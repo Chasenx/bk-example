@@ -42,28 +42,6 @@ def contact(request):
     return render(request, "home_application/contact.html")
 
 
-def hello(request):
-    """
-    测试用的hello world
-    """
-    from blueking.component.shortcuts import get_client_by_request
-
-    # 需提供 django request，client 可从 request 中获取当前用户名或从 Cookies 中获取用户登录态；
-    # 并且，支持从 django settings 获取默认的 bk_app_code、bk_app_secret、endpoint，也可通过参数指定。
-    client = get_client_by_request(request)
-
-    # 设置是否访问第三方系统的测试环境，默认值为False，访问其正式环境
-    # client.set_use_test_env(True)
-
-    # 设置访问组件API的超时时间，单位秒
-    # client.set_timeout(10)
-
-    host_id = "869"
-    result = client.cc.list_biz_hosts({"bk_biz_id": "3", "bk_module_ids": [80], "fields": ["bk_host_id"], "page": {"start": 0, "limit": 100}})
-    print(result)
-    
-    return HttpResponse(f'{result}')
-
 
 def setblank(data):
     if data is None:
@@ -73,6 +51,9 @@ def setblank(data):
 
 
 def pull_cc_data(request):
+    """
+    拉取CMDB数据
+    """
     # 拉取biz
     client = get_client_by_request(request)
     biz_result = client.cc.search_business()
@@ -156,6 +137,9 @@ def sync_cmdb(request):
 
 @login_exempt
 def get_business(request):
+    """
+    获取所有业务
+    """
     unique_biz_ids = Host.objects.values('biz_id').distinct()
     data = {"status": "success", "data": list(unique_biz_ids.values("biz_id", "biz_name"))}
 
@@ -164,6 +148,10 @@ def get_business(request):
 
 @login_exempt
 def get_sets_by_biz(request):
+    """
+    获取业务下的集群
+    :param business: int
+    """
     if 'business' in request.GET:
         business_id = request.GET['business']
         # 判断是不是数字 # TODO
@@ -179,6 +167,10 @@ def get_sets_by_biz(request):
 
 @login_exempt
 def get_modules_by_set(request):
+    """
+    获取集群下的模块
+    :param set: int
+    """
     if 'set' in request.GET:
         set_id = request.GET['set']
         
@@ -195,6 +187,12 @@ def get_modules_by_set(request):
 
 @login_exempt
 def get_hosts(request):
+    """
+    获取主机列表
+    :param business: int
+    :param set: int
+    :param module: int
+    """
     # 获取请求参数
     business_id = request.GET.get('business')
     set_id = request.GET.get('set')
@@ -216,7 +214,6 @@ def get_hosts(request):
         # 根据过滤字典查询相应的记录
         hosts = Host.objects.filter(**filters)
 
-    # 假设你希望返回查询到的记录的某些字段
     response_data = {
         "status": "success",
         'data': list(hosts.values())
@@ -224,7 +221,23 @@ def get_hosts(request):
     return JsonResponse(response_data)
 
 
+@login_exempt
+def get_host_info(request):
+    """
+    获取主机详细信息
+    :param host: int
+    """
+    host_id = request.GET.get('host')
+    client = get_client_by_request(request)
+    host_info = client.cc.get_host_base_info({"bk_host_id": host_id})
+
+    return JsonResponse(host_info)
+
+
 def test_json(request):
+    """
+    测试数据
+    """
     from django.utils import timezone
     
     data = {
