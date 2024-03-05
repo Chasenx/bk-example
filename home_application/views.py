@@ -17,6 +17,7 @@ from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
 from .models import TestModel, Host
 from django.http import JsonResponse
+from .celery_tasks import pull_cc_data, async_pull_cmdb
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -42,95 +43,17 @@ def contact(request):
     return render(request, "home_application/contact.html")
 
 
-
-def setblank(data):
-    if data is None:
-        return ''
-    else:
-        return data
-
-
-def pull_cc_data(request):
-    """
-    拉取CMDB数据
-    """
-    # 拉取biz
-    client = get_client_by_request(request)
-    biz_result = client.cc.search_business()
-    biz_info = biz_result["data"]["info"]
-    
-    # biz_info = [biz_info[0]]  # for ease
-    for biz in biz_info:
-        biz_id = biz["bk_biz_id"]
-        biz_name = biz["bk_biz_name"]
-
-        # 查找集群
-        set_result = client.cc.search_set({"bk_biz_id": biz_id, "fields": ["bk_set_id", "bk_set_name"], "condition": {}, "page": {}})
-        set_info = set_result["data"]["info"]
-
-        # set_info = [set_info[0]]  # for ease
-        for setData in set_info:
-            set_id = setData["bk_set_id"]
-            set_name = setData["bk_set_name"]
-
-            # 查找模块
-            module_result = client.cc.search_module({"bk_biz_id": biz_id, "bk_set_id": set_id, "fields": ["bk_module_id", "bk_module_name"], "condition": {}, "page": {}})
-            module_info = module_result["data"]["info"]
-            
-            # module_info = [module_info[0]]  # for ease
-            for module in module_info:
-                module_id = module["bk_module_id"]
-                module_name = module["bk_module_name"]
-
-                # 查找主机
-                # for ease
-                # biz_id = 3
-                # set_id = 18
-                # module_id = 80
-                host_result = client.cc.list_biz_hosts({
-                    "bk_biz_id": biz_id, 
-                    "bk_set_ids": [set_id],
-                    "bk_module_ids": [module_id], 
-                    "fields": ["bk_host_id", "bk_host_name", "bk_host_outerip", "bk_host_innerip", "operator", "bk_bak_operator", "bk_cloud_vendor"], 
-                    "page": {"start": 0, "limit": 1000}
-                })
-                
-                host_info = host_result["data"]["info"]
-
-                # 建立　ORM　模型
-                for host in host_info:
-                    host_id = host["bk_host_id"]
-                    host_name = setblank(host["bk_host_name"])
-
-                    orm_data = {
-                        "biz_id": biz_id,
-                        "biz_name": biz_name,
-                        "set_id": set_id,
-                        "set_name": set_name,
-                        "module_id": module_id,
-                        "module_name": module_name,
-                        "host_id": host_id,
-                        "host_name": host_name,
-                        "host_innerip": setblank(host["bk_host_innerip"]),
-                        "host_outerip": setblank(host["bk_host_outerip"]),
-                        "operator": setblank(host["operator"]),
-                        "bak_operator": setblank(host["bk_bak_operator"]),
-                        "cloud_vendor": setblank(host["bk_cloud_vendor"]),
-                    }
-
-                    if Host.objects.filter(host_id=host_id).exists():
-                        hostORM = Host.objects.filter(host_id=host_id).update(**orm_data)
-                    else:
-                        hostORM = Host.objects.create(**orm_data)
-
-
 def sync_cmdb(request):
     """
     用于同步cmdb数据库数据, 后面需要实现成 celery 异步任务
     """
     # 同步实现
-    pull_cc_data(request)
-    data = {"status": "success"}
+    # pull_cc_data(request)
+
+    # celery 异步实现
+    async_pull_cmdb(request)
+
+    data = {"status": "add task"}
 
     return JsonResponse(data)
 
@@ -234,14 +157,17 @@ def get_host_info(request):
     return JsonResponse(host_info)
 
 
+@login_exempt
 def test_json(request):
     """
     测试数据
     """
-    from django.utils import timezone
+
+    from home_application.celery_tasks import async_task
+    task_id = async_task.delay(1, 2)
     
     data = {
-        'website': 'baidu',
+        'web': 'baidu',
         'url': 'https://baidu.com/'
     }
 
