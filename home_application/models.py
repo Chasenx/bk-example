@@ -11,6 +11,25 @@ an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express o
 specific language governing permissions and limitations under the License.
 """
 
-# from django.db import models
+from django.db import models
 
-# Create your models here.
+class TestModel(models.Model):
+    data = models.CharField(max_length=200)
+    count = models.IntegerField()
+    pub_date = models.DateTimeField("date published")
+
+
+class Host(models.Model):
+    biz_name = models.CharField(max_length=100, default='')
+    biz_id = models.IntegerField()
+    set_id = models.IntegerField()
+    set_name = models.CharField(max_length=100, default='')
+    module_id = models.IntegerField()
+    module_name = models.CharField(max_length=100, default='')
+    host_id = models.IntegerField(unique=True)
+    host_name = models.CharField(max_length=100, default='')
+    host_innerip = models.CharField(max_length=100, default='')
+    host_outerip = models.CharField(max_length=100, default='')
+    operator = models.CharField(max_length=100, default='')
+    bak_operator = models.CharField(max_length=100, default='')
+    cloud_vendor = models.CharField(max_length=100, default='')

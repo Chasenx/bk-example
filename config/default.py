@@ -86,16 +86,18 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]  # noqa
 # worker: python manage.py celery worker -l info
 # beat: python manage.py celery beat -l info
 # 不使用时，请修改为 False，并删除项目目录下的 Procfile 文件中 celery 配置
-IS_USE_CELERY = False
+IS_USE_CELERY = True
 
 # 前后端分离开发配置开关，设置为True时dev和stag环境会自动加载允许跨域的相关选项
-FRONTEND_BACKEND_SEPARATION = False
+FRONTEND_BACKEND_SEPARATION = True
 
 # CELERY 并发数，默认为 2，可以通过环境变量或者 Procfile 设置
 CELERYD_CONCURRENCY = os.getenv("BK_CELERYD_CONCURRENCY", 2)  # noqa
 
 # CELERY 配置，申明任务的文件路径，即包含有 @task 装饰器的函数文件
-CELERY_IMPORTS = ()
+CELERY_IMPORTS = (
+    'home_application.celery_tasks'
+)
 
 # log level setting
 LOG_LEVEL = "INFO"
@@ -165,3 +167,7 @@ if locals().get("DISABLED_APPS"):
         locals()[_key] = tuple(
             [_item for _item in locals()[_key] if not _item.startswith(_app + ".")]
         )
+
+TEMPLATES[0]['DIRS'] += (
+    os.path.join(BASE_DIR, 'static', 'dist'),
+)

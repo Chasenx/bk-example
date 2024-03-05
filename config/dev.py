@@ -32,6 +32,7 @@ RUN_MODE = "DEVELOP"
 
 # APP本地静态资源目录
 STATIC_URL = "/static/"
+BK_STATIC_URL = "/static/dist/"
 
 # APP静态资源目录url
 # REMOTE_STATIC_URL = '%sremote/' % STATIC_URL
@@ -39,7 +40,7 @@ STATIC_URL = "/static/"
 # Celery 消息队列设置 RabbitMQ
 # BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 # Celery 消息队列设置 Redis
-BROKER_URL = "redis://localhost:6379/0"
+BROKER_URL = "redis://192.168.50.209:6379/0"
 
 DEBUG = True
 
@@ -51,8 +52,8 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": APP_CODE,  # noqa
         "USER": "root",
-        "PASSWORD": "",
-        "HOST": "localhost",
+        "PASSWORD": "Aq1wdsw23e",
+        "HOST": "192.168.50.209",
         "PORT": "3306",
     },
 }
