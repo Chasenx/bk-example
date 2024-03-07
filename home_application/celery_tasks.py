@@ -27,6 +27,8 @@ def pull_cc_data(request):
     """
     拉取CMDB数据
     """
+    # TODO: 重构这个函数
+
     # 拉取biz
     client = get_client_by_request(request)
     biz_result = client.cc.search_business()
@@ -42,9 +44,9 @@ def pull_cc_data(request):
         set_info = set_result["data"]["info"]
 
         # set_info = [set_info[0]]  # for ease
-        for setData in set_info:
-            set_id = setData["bk_set_id"]
-            set_name = setData["bk_set_name"]
+        for set_data in set_info:
+            set_id = set_data["bk_set_id"]
+            set_name = set_data["bk_set_name"]
 
             # 查找模块
             module_result = client.cc.search_module({"bk_biz_id": biz_id, "bk_set_id": set_id, "fields": ["bk_module_id", "bk_module_name"], "condition": {}, "page": {}})

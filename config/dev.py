@@ -13,6 +13,9 @@ specific language governing permissions and limitations under the License.
 from config import RUN_VER
 from config.default import FRONTEND_BACKEND_SEPARATION
 from blueapps.conf.validators import EnvValidator
+from dotenv import load_dotenv
+load_dotenv()
+import os
 
 
 EnvValidator(RUN_VER).validate()
@@ -40,7 +43,7 @@ BK_STATIC_URL = "/static/dist/"
 # Celery 消息队列设置 RabbitMQ
 # BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 # Celery 消息队列设置 Redis
-BROKER_URL = "redis://192.168.50.209:6379/0"
+BROKER_URL = os.getenv("DEV_BROKER_URL")
 
 DEBUG = True
 
@@ -51,9 +54,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": APP_CODE,  # noqa
-        "USER": "root",
-        "PASSWORD": "Aq1wdsw23e",
-        "HOST": "192.168.50.209",
+        "USER": os.getenv("DEV_DATABASE_USER"),
+        "PASSWORD": os.getenv("DEV_DATABASE_PASSWORD"),
+        "HOST": os.getenv("DEV_DATABASE_HOST"),
         "PORT": "3306",
     },
 }

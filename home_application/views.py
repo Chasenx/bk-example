@@ -51,14 +51,13 @@ def sync_cmdb(request):
     # pull_cc_data(request)
 
     # celery 异步实现
-    async_pull_cmdb(request)
+    async_pull_cmdb.delay(request)
 
     data = {"status": "add task"}
 
     return JsonResponse(data)
 
 
-@login_exempt
 def get_business(request):
     """
     获取所有业务
@@ -69,7 +68,6 @@ def get_business(request):
     return JsonResponse(data)
 
 
-@login_exempt
 def get_sets_by_biz(request):
     """
     获取业务下的集群
@@ -88,7 +86,6 @@ def get_sets_by_biz(request):
         return JsonResponse({'error': 'Missing business parameter'}, status=400)
 
 
-@login_exempt
 def get_modules_by_set(request):
     """
     获取集群下的模块
@@ -108,7 +105,6 @@ def get_modules_by_set(request):
         return JsonResponse({'error': 'Missing set parameter'}, status=400)
 
 
-@login_exempt
 def get_hosts(request):
     """
     获取主机列表
@@ -131,6 +127,7 @@ def get_hosts(request):
         filters['module_id'] = module_id
 
     # 如果没有任何参数提供，则返回全部记录
+    # TODO: 做分页操作 limit page
     if not filters:
         hosts = Host.objects.all()
     else:
@@ -144,7 +141,6 @@ def get_hosts(request):
     return JsonResponse(response_data)
 
 
-@login_exempt
 def get_host_info(request):
     """
     获取主机详细信息
@@ -157,7 +153,6 @@ def get_host_info(request):
     return JsonResponse(host_info)
 
 
-@login_exempt
 def test_json(request):
     """
     测试数据
