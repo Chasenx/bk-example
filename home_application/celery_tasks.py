@@ -1,13 +1,15 @@
 from celery.task import task
 from blueking.component.shortcuts import get_client_by_request
 from .models import Host
+import logging
 
 @task()
 def async_task(x, y):
     """
     test for celery
     """
-    print('execute celery async task-----')
+    logger = logging.getLogger('celery')
+    logger.info('execute celery async task-----')
     print(x, y)
 
 
@@ -29,19 +31,30 @@ def pull_cc_data(request):
     """
     # TODO: 重构这个函数
 
-    # 拉取biz
+    # 调用接口的客户端
     client = get_client_by_request(request)
-    biz_result = client.cc.search_business()
-    biz_info = biz_result["data"]["info"]
+
+    # 拉取biz
+    try:
+        biz_result = client.cc.search_business()
+        biz_info = biz_result["data"]["info"]
+        assert(biz_info is not None)
+    except:
+        return
+    
     
     # biz_info = [biz_info[0]]  # for ease
     for biz in biz_info:
-        biz_id = biz["bk_biz_id"]
-        biz_name = biz["bk_biz_name"]
+        biz_id = biz.get("bk_biz_id")
+        biz_name = biz.get("bk_biz_name", "")
 
         # 查找集群
-        set_result = client.cc.search_set({"bk_biz_id": biz_id, "fields": ["bk_set_id", "bk_set_name"], "condition": {}, "page": {}})
-        set_info = set_result["data"]["info"]
+        try:
+            set_result = client.cc.search_set({"bk_biz_id": biz_id, "fields": ["bk_set_id", "bk_set_name"], "condition": {}, "page": {}})
+            set_info = set_result["data"]["info"]
+            assert(set_info is not None)
+        except:
+            return
 
         # set_info = [set_info[0]]  # for ease
         for set_data in set_info:
@@ -49,8 +62,12 @@ def pull_cc_data(request):
             set_name = set_data["bk_set_name"]
 
             # 查找模块
-            module_result = client.cc.search_module({"bk_biz_id": biz_id, "bk_set_id": set_id, "fields": ["bk_module_id", "bk_module_name"], "condition": {}, "page": {}})
-            module_info = module_result["data"]["info"]
+            try:
+                module_result = client.cc.search_module({"bk_biz_id": biz_id, "bk_set_id": set_id, "fields": ["bk_module_id", "bk_module_name"], "condition": {}, "page": {}})
+                module_info = module_result["data"]["info"]
+                assert(module_info is not None)
+            except:
+                return
             
             # module_info = [module_info[0]]  # for ease
             for module in module_info:
@@ -62,15 +79,19 @@ def pull_cc_data(request):
                 # biz_id = 3
                 # set_id = 18
                 # module_id = 80
-                host_result = client.cc.list_biz_hosts({
-                    "bk_biz_id": biz_id, 
-                    "bk_set_ids": [set_id],
-                    "bk_module_ids": [module_id], 
-                    "fields": ["bk_host_id", "bk_host_name", "bk_host_outerip", "bk_host_innerip", "operator", "bk_bak_operator", "bk_cloud_vendor"], 
-                    "page": {"start": 0, "limit": 1000}
-                })
-                
-                host_info = host_result["data"]["info"]
+                try:
+                    host_result = client.cc.list_biz_hosts({
+                        "bk_biz_id": biz_id, 
+                        "bk_set_ids": [set_id],
+                        "bk_module_ids": [module_id], 
+                        "fields": ["bk_host_id", "bk_host_name", "bk_host_outerip", "bk_host_innerip", "operator", "bk_bak_operator", "bk_cloud_vendor"], 
+                        "page": {"start": 0, "limit": 1000}
+                    })
+                    
+                    host_info = host_result["data"]["info"]
+                    assert(host_info is not None)
+                except:
+                    return
 
                 # 建立　ORM　模型
                 for host in host_info:

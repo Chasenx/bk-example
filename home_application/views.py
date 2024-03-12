@@ -153,13 +153,19 @@ def get_host_info(request):
     return JsonResponse(host_info)
 
 
+@login_exempt
 def test_json(request):
     """
     测试数据
     """
 
-    from home_application.celery_tasks import async_task
-    task_id = async_task.delay(1, 2)
+    # from home_application.celery_tasks import async_task
+    # task_id = async_task.delay(1, 2)
+
+    # client = get_client_by_request(request)
+    # biz_result = client.cc.search_business()
+    # test_result = biz_result["data"]["info"][3]["operator"]
+    # print(test_result == '')
     
     data = {
         'web': 'baidu',
