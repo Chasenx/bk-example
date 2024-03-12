@@ -55,17 +55,17 @@ def sync_cmdb(request):
         data = {"status": "not login yet"}
         return JsonResponse(data)
 
-    REDIS_HOST = os.environ.get('REDIS_HOST')
-    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
-    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
-    lock_key = 'celery_pull_cmdb'
-    status = r.get(lock_key)
-
+    # REDIS_HOST = os.environ.get('REDIS_HOST')
+    # REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    # r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
+    # lock_key = 'celery_pull_cmdb'
+    # status = r.get(lock_key)
+    status = None
     if status is None:
         # 设置标志
-        current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
-        r.set(lock_key, current_time, ex=100)
+        # current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
+        # r.set(lock_key, current_time, ex=100)
         # celery 异步实现
         async_pull_cmdb.delay(bk_token)
         data = {"status": "start sync"}
