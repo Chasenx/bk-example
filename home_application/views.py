@@ -17,7 +17,9 @@ from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
 from .models import TestModel, Host
 from django.http import JsonResponse
-from .celery_tasks import pull_cc_data, async_pull_cmdb
+from .celery_tasks import async_pull_cmdb
+import redis
+from datetime import datetime
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -47,14 +49,26 @@ def sync_cmdb(request):
     """
     用于同步cmdb数据库数据, 后面需要实现成 celery 异步任务
     """
-    # 同步实现
-    # pull_cc_data(request)
+    bk_token = request.COOKIES["bk_token"]
+    if bk_token is None:
+        data = {"status": "not login yet"}
+        return JsonResponse(data)
 
-    # celery 异步实现
-    async_pull_cmdb.delay(request)
+    # TODO: set redis dev env
+    r = redis.Redis(host='192.168.50.209', port=6379, db=0)
+    lock_key = 'celery_pull_cmdb'
+    status = r.get(lock_key)
 
-    data = {"status": "add task"}
-
+    if status is None:
+        # 设置标志
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        r.set(lock_key, current_time, ex=100)
+        # celery 异步实现
+        async_pull_cmdb.delay(bk_token)
+        data = {"status": "start to sync"}
+    else:
+        data = {"status": f"task start at {status.decode('utf-8')}"}
+        
     return JsonResponse(data)
 
 
@@ -159,8 +173,8 @@ def test_json(request):
     测试数据
     """
 
-    # from home_application.celery_tasks import async_task
-    # task_id = async_task.delay(1, 2)
+    from home_application.celery_tasks import async_task
+    task_id = async_task.delay(1, 2)
 
     # client = get_client_by_request(request)
     # biz_result = client.cc.search_business()

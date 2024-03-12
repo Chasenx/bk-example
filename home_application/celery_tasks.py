@@ -1,7 +1,9 @@
 from celery.task import task
-from blueking.component.shortcuts import get_client_by_request
+from blueking.component.shortcuts import get_client_by_bktoken
 from .models import Host
 import logging
+import time
+import redis
 
 @task()
 def async_task(x, y):
@@ -10,33 +12,37 @@ def async_task(x, y):
     """
     logger = logging.getLogger('celery')
     logger.info('execute celery async task-----')
+
     print(x, y)
 
 
 @task()
-def async_pull_cmdb(request):
-    pull_cc_data(request)
+def async_pull_cmdb(bk_token):
+    pull_cc_data(bk_token)
+
+    # 删除同步标记
+    r = redis.Redis(host='192.168.50.209', port=6379, db=0)
+    lock_key = 'celery_pull_cmdb'
+    r.delete(lock_key)
 
 
 def setblank(data):
-    if data is None:
-        return ''
-    else:
-        return data
+    return data if data else ''
 
 
-def pull_cc_data(request):
+def pull_cc_data(bk_token):
     """
     拉取CMDB数据
     """
     # TODO: 重构这个函数
 
     # 调用接口的客户端
-    client = get_client_by_request(request)
+    client = get_client_by_bktoken(bk_token)
 
     # 拉取biz
     try:
         biz_result = client.cc.search_business()
+        print(biz_result)
         biz_info = biz_result["data"]["info"]
         assert(biz_info is not None)
     except:

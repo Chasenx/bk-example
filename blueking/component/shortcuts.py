@@ -33,6 +33,20 @@ def get_client_by_request(request, **kwargs):
     return ComponentClient(conf.APP_CODE, conf.SECRET_KEY, common_args=common_args)
 
 
+def get_client_by_bktoken(bk_token, **kwargs):
+    """根据当前请求返回一个client
+
+    :param bktoken: bktoken
+    :returns: 一个初始化好的ComponentClient对象
+    """
+
+    common_args = {
+        "bk_token": bk_token,
+    }
+    common_args.update(kwargs)
+    return ComponentClient(conf.APP_CODE, conf.SECRET_KEY, common_args=common_args)
+
+
 def get_client_by_user(user, **kwargs):
     """根据user实例返回一个client
 
