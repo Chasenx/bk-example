@@ -4,6 +4,7 @@ from .models import Host
 import logging
 import time
 import redis
+import os
 
 @task()
 def async_task(x, y):
@@ -21,7 +22,10 @@ def async_pull_cmdb(bk_token):
     pull_cc_data(bk_token)
 
     # 删除同步标记
-    r = redis.Redis(host='192.168.50.209', port=6379, db=0)
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
     lock_key = 'celery_pull_cmdb'
     r.delete(lock_key)
 

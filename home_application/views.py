@@ -20,6 +20,7 @@ from django.http import JsonResponse
 from .celery_tasks import async_pull_cmdb
 import redis
 from datetime import datetime
+import os
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -54,20 +55,22 @@ def sync_cmdb(request):
         data = {"status": "not login yet"}
         return JsonResponse(data)
 
-    # TODO: set redis dev env
-    r = redis.Redis(host='192.168.50.209', port=6379, db=0)
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
     lock_key = 'celery_pull_cmdb'
     status = r.get(lock_key)
 
     if status is None:
         # 设置标志
-        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
         r.set(lock_key, current_time, ex=100)
         # celery 异步实现
         async_pull_cmdb.delay(bk_token)
-        data = {"status": "start to sync"}
+        data = {"status": "start sync"}
     else:
-        data = {"status": f"task start at {status.decode('utf-8')}"}
+        data = {"status": "syncing", "timestamp": status.decode('utf-8')}
         
     return JsonResponse(data)
 
@@ -173,14 +176,17 @@ def test_json(request):
     测试数据
     """
 
-    from home_application.celery_tasks import async_task
-    task_id = async_task.delay(1, 2)
+    # from home_application.celery_tasks import async_task
+    # task_id = async_task.delay(1, 2)
 
     # client = get_client_by_request(request)
     # biz_result = client.cc.search_business()
     # test_result = biz_result["data"]["info"][3]["operator"]
     # print(test_result == '')
-    
+    # import os
+    # for key, value in os.environ.items():
+    #     print(f"{key}: {value}")
+
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/'
