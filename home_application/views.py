@@ -20,7 +20,8 @@ from django.http import JsonResponse
 from .celery_tasks import async_pull_cmdb
 import redis
 from datetime import datetime
-import os
+import os, time
+from .job import create_search_files_job, check_job_status, get_step_instance_id, get_job_result, parse_log_data
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -168,6 +169,62 @@ def get_host_info(request):
     host_info = client.cc.get_host_base_info({"bk_host_id": host_id})
 
     return JsonResponse(host_info)
+
+
+def search_files(request):
+    """
+    利用作业平台查询主机文件
+    :param dir: str
+    :param suffix: str
+    :param host: str
+    """
+    host_dict = {
+        "10.0.48.18": 863,
+        "10.0.48.46": 864,
+        "10.0.48.45": 865,
+        "10.0.48.48": 867,
+        "10.0.48.37": 868,
+        "10.0.48.32": 869,
+        "10.0.48.8": 870,
+        "10.0.48.7": 871,
+    }
+
+    dir = request.GET.get('dir')
+    suffix = request.GET.get('suffix')
+    hosts = request.GET.get('hosts')
+
+    if dir and suffix and hosts:
+        hosts = hosts.split(',')            # 分开 host
+        hosts = [h.strip() for h in hosts]  # 去除 IP 地址首位空格
+
+        # 限定主机查询文件
+        for h in hosts:
+            if h not in host_dict:
+                return JsonResponse({"message": f'{h} can not execute'})
+        
+        client = get_client_by_request(request)
+
+        # 创建查询任务
+        job_instance_id = create_search_files_job(client, dir, suffix, hosts)
+        
+        # 等待任务完成
+        while not check_job_status(client, job_instance_id):
+            # TODO 想个办法解决这个 sleep 问题
+            time.sleep(0.5)
+        
+        # 获取 step_instance_id
+        step_instance_id = get_step_instance_id(client=client, job_instance_id=job_instance_id)
+
+        # 获取结果
+        file_info = []
+        for h in hosts:
+            result = get_job_result(client=client, job_instance_id=job_instance_id, step_instance_id=step_instance_id, host_id=host_dict[h])
+            if result:
+                file_info.append(parse_log_data(result, h))
+        
+        return JsonResponse({"data": file_info})
+
+    return JsonResponse({"message": "query error"})
 
 
 @login_exempt

@@ -27,6 +27,8 @@ urlpatterns = (
     url(r'^module$', views.get_modules_by_set),
     url(r'^hosts$', views.get_hosts),
     url(r'^host-info$', views.get_host_info),
+    url(r'^search-files$', views.search_files),
+    
 )
 
 # urlpatterns = [
