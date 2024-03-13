@@ -48,25 +48,25 @@ def contact(request):
 
 def sync_cmdb(request):
     """
-    用于同步cmdb数据库数据, 后面需要实现成 celery 异步任务
+    用于同步cmdb数据库数据
     """
     bk_token = request.COOKIES["bk_token"]
     if bk_token is None:
         data = {"status": "not login yet"}
         return JsonResponse(data)
 
-    # REDIS_HOST = os.environ.get('REDIS_HOST')
-    # REDIS_PORT = int(os.environ.get('REDIS_PORT'))
-    # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-    # r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
-    # lock_key = 'celery_pull_cmdb'
-    # status = r.get(lock_key)
-    status = None
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
+    lock_key = 'celery_pull_cmdb'
+    status = r.get(lock_key)
+
     if status is None:
         # 设置标志
-        # current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
-        # r.set(lock_key, current_time, ex=100)
-        # celery 异步实现
+        current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
+        r.set(lock_key, current_time, ex=100)
+        # celery 异步拉取数据
         async_pull_cmdb.delay(bk_token)
         data = {"status": "start sync"}
     else:
@@ -186,7 +186,9 @@ def test_json(request):
     # import os
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
-
+    import logging
+    logger = logging.getLogger('my_log')
+    logger.info('help')
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/'

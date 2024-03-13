@@ -22,12 +22,12 @@ def async_pull_cmdb(bk_token):
     pull_cc_data(bk_token)
 
     # 删除同步标记
-    # REDIS_HOST = os.environ.get('REDIS_HOST')
-    # REDIS_PORT = int(os.environ.get('REDIS_PORT'))
-    # REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
-    # r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
-    # lock_key = 'celery_pull_cmdb'
-    # r.delete(lock_key)
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
+    lock_key = 'celery_pull_cmdb'
+    r.delete(lock_key)
 
 
 def setblank(data):

@@ -14,9 +14,10 @@ from config import RUN_VER
 from config.default import FRONTEND_BACKEND_SEPARATION
 from blueapps.conf.validators import EnvValidator
 from dotenv import load_dotenv
-load_dotenv()
 import os
 
+
+load_dotenv()
 
 EnvValidator(RUN_VER).validate()
 
