@@ -17,11 +17,14 @@ from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
 from .models import TestModel, Host
 from django.http import JsonResponse
-from .celery_tasks import async_pull_cmdb
+from .celery_tasks import async_pull_cmdb, async_create_backup_files_job
 import redis
 from datetime import datetime
 import os, time
-from .job import create_search_files_job, check_job_status, get_step_instance_id, get_job_result, parse_log_data
+import logging
+from .job import create_search_files_job, check_job_status, get_step_instance_id, get_job_result, parse_log_data, create_backup_files_job
+
+logger = logging.getLogger('app')
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -227,6 +230,55 @@ def search_files(request):
     return JsonResponse({"message": "query error"})
 
 
+def backup_files(request):
+    """
+    利用作业平台备份主机文件
+    :param dir: str
+    :param suffix: str
+    :param host: str
+    """
+    host_dict = {
+        "10.0.48.18": 863,
+        "10.0.48.46": 864,
+        "10.0.48.45": 865,
+        "10.0.48.48": 867,
+        "10.0.48.37": 868,
+        "10.0.48.32": 869,
+        "10.0.48.8": 870,
+        "10.0.48.7": 871,
+    }
+
+    bk_token = request.COOKIES["bk_token"]
+    if bk_token is None:
+        data = {"message": "not login yet"}
+        return JsonResponse(data)
+
+    dir = request.GET.get('dir')
+    files = request.GET.get('files')
+    hosts = request.GET.get('hosts')
+    
+    if dir and files and hosts:
+        hosts = hosts.split(',')            # 分开 host
+        hosts = [h.strip() for h in hosts]  # 去除 IP 地址首位空格
+
+        # 限定主机备份文件
+        for h in hosts:
+            if h not in host_dict:
+                return JsonResponse({"message": f'{h} is inactive'})
+        
+        # client = get_client_by_request(request)
+
+        # 创建文件备份任务 (同步实现)
+        # job_instance_id = create_backup_files_job(client, dir, files, hosts)
+
+        # 创建文件备份任务 (异步实现)
+        job_instance_id = async_create_backup_files_job.delay(bk_token, dir, files, hosts)
+        
+        return JsonResponse({"message": "add backup task"})
+
+    return JsonResponse({"message": "query error"})
+
+
 @login_exempt
 def test_json(request):
     """
@@ -243,17 +295,10 @@ def test_json(request):
     # import os
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
-    # import logging
-    # logger = logging.getLogger('app')
-    # logger.info('help-----------------------------------')
-    client = get_client_by_request(request)
-    from .job import create_backup_files_job
-    result = create_backup_files_job(client, '/tmp', 'yddaemon.log', ["10.0.48.18"])
-
+    logger.info('hhhhhhhhh==============')
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/',
-        "result": result
     }
 
     return JsonResponse(data)

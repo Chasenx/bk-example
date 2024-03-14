@@ -5,17 +5,9 @@ import logging
 import time
 import redis
 import os
+from .job import create_backup_files_job
 
-@task()
-def async_task(x, y):
-    """
-    test for celery
-    """
-    logger = logging.getLogger('celery')
-    logger.info('execute celery async task-----')
-
-    print(x, y)
-
+logger = logging.getLogger('celery')
 
 @task()
 def async_pull_cmdb(bk_token):
@@ -28,6 +20,16 @@ def async_pull_cmdb(bk_token):
     r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
     lock_key = 'celery_pull_cmdb'
     r.delete(lock_key)
+
+
+@task()
+def async_create_backup_files_job(bk_token, dir, files, hosts):
+    logger.info(f'Create backup files job, dir: {dir}, files{files}, hosts: {hosts}')
+
+    client = get_client_by_bktoken(bk_token)
+    job_instance_id = create_backup_files_job(client, dir, files, hosts)
+
+    # 记录进入数据库对应表
 
 
 def setblank(data):

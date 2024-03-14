@@ -1,4 +1,7 @@
 from django.conf import settings
+import logging
+
+logger = logging.getLogger('app')
 
 def create_search_files_job(client, dir, suffix, hosts):
     """
