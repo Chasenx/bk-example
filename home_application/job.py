@@ -39,6 +39,7 @@ def create_search_files_job(client, dir, suffix, hosts):
         result = client.jobv3.execute_job_plan(**query)
         data = result.get("data")
     except Exception as e:
+        logger.error(e, exc_info=True)
         return None
 
     if data:
@@ -65,6 +66,7 @@ def check_job_status(client, job_instance_id):
         result = client.jobv3.get_job_instance_status(**query)
         data = result.get("data")
     except Exception as e:
+        logger.error(e, exc_info=True)
         return False
 
     if data:
@@ -88,8 +90,10 @@ def get_step_instance_id(client, job_instance_id):
 
     try:
         result = client.jobv3.get_job_instance_status(**query)
+        print(result)
         data = result.get("data")
     except Exception as e:
+        logger.error(e, exc_info=True)
         return None
 
     if data:
@@ -119,6 +123,7 @@ def get_job_result(client, job_instance_id, step_instance_id, host_id):
         result = client.jobv3.get_job_instance_ip_log(**query)
         data = result.get("data")
     except Exception as e:
+        logger.error(e, exc_info=True)
         return None
 
     if data:
@@ -188,6 +193,7 @@ def create_backup_files_job(client, dir, files, hosts):
         result = client.jobv3.execute_job_plan(**query)
         data = result.get("data")
     except Exception as e:
+        logger.error(e, exc_info=True)
         return None
 
     if data:

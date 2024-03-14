@@ -13,9 +13,10 @@ specific language governing permissions and limitations under the License.
 
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
-from .models import TestModel, Host
+from .models import Host, Backup
 from django.http import JsonResponse
 from .celery_tasks import async_pull_cmdb, async_create_backup_files_job
 import redis
@@ -266,8 +267,6 @@ def backup_files(request):
             if h not in host_dict:
                 return JsonResponse({"message": f'{h} is inactive'})
         
-        # client = get_client_by_request(request)
-
         # 创建文件备份任务 (同步实现)
         # job_instance_id = create_backup_files_job(client, dir, files, hosts)
 
@@ -279,6 +278,36 @@ def backup_files(request):
     return JsonResponse({"message": "query error"})
 
 
+def backup_records(request):
+    page_size = request.GET.get('limit', 10)  # 提供默认值
+    start = request.GET.get('start', 1)       # 提供默认值
+
+    try:
+        page_size = int(page_size)
+        start = int(start)
+    except ValueError:
+        return JsonResponse({"message": "query error"})
+
+    objects = Backup.objects.all().order_by('-pk')  # 按主键倒序
+    paginator = Paginator(objects, page_size)       # page_size 为每页的对象数
+
+    try:
+        # 获取请求的页面
+        page_objects = paginator.page(start)
+    except EmptyPage:
+        # 如果页码超出范围，展示最后一页的结果
+        page_objects = paginator.page(paginator.num_pages)
+
+    response_data = {
+        "status": "success",
+        "total": Backup.objects.count(),
+        "count": len(page_objects),
+        'data': list(page_objects.object_list.values())  # 使用 object_list 获取 QuerySet
+    }
+    return JsonResponse(response_data)
+
+
+
 @login_exempt
 def test_json(request):
     """
@@ -288,7 +317,7 @@ def test_json(request):
     # from home_application.celery_tasks import async_task
     # task_id = async_task.delay(1, 2)
 
-    # client = get_client_by_request(request)
+    client = get_client_by_request(request)
     # biz_result = client.cc.search_business()
     # test_result = biz_result["data"]["info"][3]["operator"]
     # print(test_result == '')

@@ -6,8 +6,11 @@ import time
 import redis
 import os
 from .job import create_backup_files_job
+from .models import Backup
+from django.conf import settings
 
 logger = logging.getLogger('celery')
+
 
 @task()
 def async_pull_cmdb(bk_token):
@@ -24,12 +27,28 @@ def async_pull_cmdb(bk_token):
 
 @task()
 def async_create_backup_files_job(bk_token, dir, files, hosts):
-    logger.info(f'Create backup files job, dir: {dir}, files{files}, hosts: {hosts}')
+    # TODO: 备份冷却时间，不能一直点击
+    logger.info(f'Create backup files job, dir: {dir}, files: {files}, hosts: {hosts}')
 
     client = get_client_by_bktoken(bk_token)
     job_instance_id = create_backup_files_job(client, dir, files, hosts)
+    
+    # 添加备份记录表项
+    bulk_backup = []
+    for host in hosts:
+        instance_info = {
+            "host_ip": host,
+            "dir": dir,
+            "suffix": '',
+            "backup_user": 'test_user',
+            "backup_files": files,
+            "job_link": f'{settings.JOB_LINK_PREFIX}{job_instance_id}',
+            "job_instance_id": job_instance_id,
+        }
+        logger.info('create Backup object', instance_info)
+        bulk_backup.append(Backup(**instance_info))
 
-    # 记录进入数据库对应表
+    Backup.objects.bulk_create(bulk_backup)
 
 
 def setblank(data):
@@ -40,7 +59,7 @@ def pull_cc_data(bk_token):
     """
     拉取CMDB数据
     """
-    # TODO: 重构这个函数
+    # TODO: 重构这个函数, 多线程查询 + bulk_create
 
     # 调用接口的客户端
     client = get_client_by_bktoken(bk_token)

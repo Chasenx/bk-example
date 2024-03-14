@@ -12,11 +12,7 @@ specific language governing permissions and limitations under the License.
 """
 
 from django.db import models
-
-class TestModel(models.Model):
-    data = models.CharField(max_length=200)
-    count = models.IntegerField()
-    pub_date = models.DateTimeField("date published")
+import django.utils.timezone as timezone
 
 
 class Host(models.Model):
@@ -33,3 +29,14 @@ class Host(models.Model):
     operator = models.CharField(max_length=100, default='')
     bak_operator = models.CharField(max_length=100, default='')
     cloud_vendor = models.CharField(max_length=100, default='')
+
+
+class Backup(models.Model):
+    host_ip = models.CharField('备份主机IP', max_length=100, default='')
+    dir = models.CharField('备份目录', max_length=100, default='')
+    suffix = models.CharField('备份名后缀', max_length=100, default='')
+    backup_user = models.CharField('备份人', max_length=100, default='')
+    backup_time = models.DateTimeField('备份时间',default = timezone.now)
+    backup_files = models.CharField('备份文件名', max_length=100, default='')
+    job_link = models.CharField('JOB链接', max_length=100, default='')
+    job_instance_id = models.CharField('job_instance_id', max_length=100, default='')
