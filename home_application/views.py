@@ -243,12 +243,17 @@ def test_json(request):
     # import os
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
-    import logging
-    logger = logging.getLogger('my_log')
-    logger.info('help')
+    # import logging
+    # logger = logging.getLogger('app')
+    # logger.info('help-----------------------------------')
+    client = get_client_by_request(request)
+    from .job import create_backup_files_job
+    result = create_backup_files_job(client, '/tmp', 'yddaemon.log', ["10.0.48.18"])
+
     data = {
         'web': 'baidu',
-        'url': 'https://baidu.com/'
+        'url': 'https://baidu.com/',
+        "result": result
     }
 
     return JsonResponse(data)
