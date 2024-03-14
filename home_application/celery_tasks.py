@@ -26,7 +26,7 @@ def async_pull_cmdb(bk_token):
 
 
 @task()
-def async_create_backup_files_job(bk_token, dir, files, hosts):
+def async_create_backup_files_job(bk_token, dir, files, hosts, username):
     # TODO: 备份冷却时间，不能一直点击
     logger.info(f'Create backup files job, dir: {dir}, files: {files}, hosts: {hosts}')
 
@@ -40,7 +40,7 @@ def async_create_backup_files_job(bk_token, dir, files, hosts):
             "host_ip": host,
             "dir": dir,
             "suffix": '',
-            "backup_user": 'test_user',
+            "backup_user": username,
             "backup_files": files,
             "job_link": f'{settings.JOB_LINK_PREFIX}{job_instance_id}',
             "job_instance_id": job_instance_id,

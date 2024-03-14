@@ -271,7 +271,8 @@ def backup_files(request):
         # job_instance_id = create_backup_files_job(client, dir, files, hosts)
 
         # 创建文件备份任务 (异步实现)
-        job_instance_id = async_create_backup_files_job.delay(bk_token, dir, files, hosts)
+        username = request.user.username
+        job_instance_id = async_create_backup_files_job.delay(bk_token, dir, files, hosts, username)
         
         return JsonResponse({"message": "add backup task"})
 
@@ -307,7 +308,6 @@ def backup_records(request):
     return JsonResponse(response_data)
 
 
-
 @login_exempt
 def test_json(request):
     """
@@ -324,10 +324,12 @@ def test_json(request):
     # import os
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
-    logger.info('hhhhhhhhh==============')
+    logger.info('hhh')
+    from django.conf import settings
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/',
+        'user': settings.TEST_ENV
     }
 
     return JsonResponse(data)
