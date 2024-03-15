@@ -32,6 +32,11 @@ def async_create_backup_files_job(bk_token, dir, files, hosts, username):
 
     client = get_client_by_bktoken(bk_token)
     job_instance_id = create_backup_files_job(client, dir, files, hosts)
+
+    # 提取备份文件后缀
+    file_list = files.split(',')
+    first_file_name = file_list[0]
+    suffix = first_file_name.split('.')[-1]
     
     # 添加备份记录表项
     bulk_backup = []
@@ -39,7 +44,7 @@ def async_create_backup_files_job(bk_token, dir, files, hosts, username):
         instance_info = {
             "host_ip": host,
             "dir": dir,
-            "suffix": '',
+            "suffix": suffix,
             "backup_user": username,
             "backup_files": files,
             "job_link": f'{settings.JOB_LINK_PREFIX}{job_instance_id}',
