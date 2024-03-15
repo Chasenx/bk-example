@@ -200,6 +200,7 @@ def search_files(request):
     if dir and suffix and hosts:
         hosts = hosts.split(',')            # 分开 host
         hosts = [h.strip() for h in hosts]  # 去除 IP 地址首位空格
+        hosts = list(set(hosts))            # 去除重复 IP 地址
 
         # 限定主机查询文件
         for h in hosts:
@@ -224,7 +225,7 @@ def search_files(request):
         for h in hosts:
             result = get_job_result(client=client, job_instance_id=job_instance_id, step_instance_id=step_instance_id, host_id=host_dict[h])
             if result:
-                file_info.append(parse_log_data(result, h))
+                file_info.append(parse_log_data(result, h, dir))
         
         return JsonResponse({"data": file_info})
 
@@ -260,7 +261,8 @@ def backup_files(request):
     
     if dir and files and hosts:
         hosts = hosts.split(',')            # 分开 host
-        hosts = [h.strip() for h in hosts]  # 去除 IP 地址首位空格
+        hosts = [h.strip() for h in hosts]  # 去除 IP 地址首尾空格
+        hosts = list(set(hosts))            # 去除重复 IP 地址
 
         # 限定主机备份文件
         for h in hosts:
@@ -308,7 +310,7 @@ def backup_records(request):
     return JsonResponse(response_data)
 
 
-@login_exempt
+# @login_exempt
 def test_json(request):
     """
     测试数据

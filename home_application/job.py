@@ -133,7 +133,7 @@ def get_job_result(client, job_instance_id, step_instance_id, host_id):
         return None
 
 
-def parse_log_data(log_data, ip):
+def parse_log_data(log_data, ip, dir):
     """
     清洗返回的查询文件日志数据
     :param log_data: str
@@ -152,7 +152,8 @@ def parse_log_data(log_data, ip):
     result = {
         "ip": ip,
         "filenames": ', '.join(file_names),
-        "size": sum(file_size)
+        "size": sum(file_size),
+        "dir": dir,
     }
     return result
 

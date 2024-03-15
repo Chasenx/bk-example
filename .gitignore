@@ -3,3 +3,4 @@ notes.md
 __pycache__
 .env
 local_settings.py
+local*
