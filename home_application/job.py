@@ -154,6 +154,7 @@ def parse_log_data(log_data, ip, dir):
         "filenames": ', '.join(file_names),
         "size": sum(file_size),
         "dir": dir,
+        "file_count": len(file_names)
     }
     return result
 
