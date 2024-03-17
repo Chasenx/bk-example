@@ -30,6 +30,7 @@ urlpatterns = (
     url(r'^search-files$', views.search_files),
     url(r'^backup-files$', views.backup_files),
     url(r'^backup-records$', views.backup_records),
+    url(r'^topo$', views.topo_tree),
 )
 
 # urlpatterns = [

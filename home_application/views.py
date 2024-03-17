@@ -327,6 +327,17 @@ def backup_records(request):
     return JsonResponse(response_data)
 
 
+def topo_tree(request):
+    """
+    输出拓扑结构
+    """
+    data = {
+        "status": "success",
+        "data": get_topo()
+    }
+    return JsonResponse(data)
+
+
 # @login_exempt
 def test_json(request):
     """
@@ -354,7 +365,7 @@ def test_json(request):
     # from django.conf import settings
     bk_token = request.COOKIES["bk_token"]
     # 同步
-    # pull_cc_data_new(bk_token=bk_token)
+    pull_cc_data_new(bk_token=bk_token)
 
     # 输出拓扑结构
 

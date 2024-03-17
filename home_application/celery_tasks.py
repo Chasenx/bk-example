@@ -13,7 +13,7 @@ logger = logging.getLogger('app')
 
 @task()
 def async_pull_cmdb(bk_token):
-    pull_cc_data(bk_token)
+    pull_cc_data_new(bk_token)
 
     # 删除同步标记
     REDIS_HOST = os.environ.get('REDIS_HOST')
@@ -469,6 +469,19 @@ def pull_cc_data_new(bk_token):
 
     version.status = Version.StatusEnum.SUCCESS.name
     version.save()
+    logger.info('ayncing success')
+
+    # 删除旧版本数据
+    outdated_hosts = Host.objects.exclude(version=version)
+
+    for host in outdated_hosts:
+        host.modules.clear()
+        host.delete()
+
+    # 接下来删除其他模型的过时对象
+    for model in [Business, Set, Module]:  # Host已经处理过了
+        outdated_objects = model.objects.exclude(version=version)
+        outdated_objects.delete()
 
 
 def get_topo():
