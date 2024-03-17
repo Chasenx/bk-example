@@ -326,12 +326,16 @@ def test_json(request):
     # import os
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
-    logger.info('hhh')
+    # logger.info('hhh')
+    query = {
+        "bk_biz_id": 3,
+    }
+    result = client.cc.search_biz_inst_topo(**query)
     from django.conf import settings
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/',
-        'user': settings.TEST_ENV
+        'user': result["data"]
     }
 
     return JsonResponse(data)
