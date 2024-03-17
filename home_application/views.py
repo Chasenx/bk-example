@@ -16,9 +16,9 @@ from django.http import HttpResponse
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
-from .models import Host, Backup
+from .models import Host, Backup, Business, Set, Module, Version
 from django.http import JsonResponse
-from .celery_tasks import async_pull_cmdb, async_create_backup_files_job
+from .celery_tasks import async_pull_cmdb, async_create_backup_files_job, pull_cc_data_new, get_topo
 import redis
 from datetime import datetime
 import os, time
@@ -84,8 +84,8 @@ def get_business(request):
     """
     获取所有业务
     """
-    unique_biz_ids = Host.objects.values('biz_id').distinct()
-    data = {"status": "success", "data": list(unique_biz_ids.values("biz_id", "biz_name"))}
+    businesses = Business.objects.all()
+    data = {"status": "success", "data": [{"biz_id": b.biz_id, "biz_name": b.biz_name} for b in businesses]}
 
     return JsonResponse(data)
 
@@ -98,10 +98,11 @@ def get_sets_by_biz(request):
     if 'business' in request.GET:
         business_id = request.GET['business']
         # 判断是不是数字 # TODO
-        sets = Host.objects.filter(biz_id=business_id).values('set_id', 'set_name').distinct()
+        # sets = Host.objects.filter(biz_id=business_id).values('set_id', 'set_name').distinct()
+        sets = Business.objects.get(biz_id=business_id).sets.values('set_id', 'set_name')
         response_data = {
             "status": "success",
-            'data': list(sets)
+            "data": list(sets) if list(sets) else []
         }
         return JsonResponse(response_data)
     else:
@@ -116,8 +117,8 @@ def get_modules_by_set(request):
     if 'set' in request.GET:
         set_id = request.GET['set']
         
-        modules = Host.objects.filter(set_id=set_id).values('module_id', 'module_name').distinct()
-        
+        # modules = Host.objects.filter(set_id=set_id).values('module_id', 'module_name').distinct()
+        modules = Set.objects.get(set_id=set_id).modules.values('module_id', 'module_name')
         response_data = {
             "status": "success",
             'data': list(modules)
@@ -134,31 +135,47 @@ def get_hosts(request):
     :param set: int
     :param module: int
     """
+    # 分页
+    page_size = request.GET.get('limit', 10)  # 提供默认值
+    start = request.GET.get('start', 1)       # 提供默认值
+
+    try:
+        page_size = int(page_size)
+        start = int(start)
+    except ValueError:
+        return JsonResponse({"message": "query error"})
+
     # 获取请求参数
     business_id = request.GET.get('business')
     set_id = request.GET.get('set')
     module_id = request.GET.get('module')
-
-    # 创建一个过滤字典，只包含提供的参数
-    filters = {}
-    if business_id:
-        filters['biz_id'] = business_id
-    if set_id:
-        filters['set_id'] = set_id
+        
     if module_id:
-        filters['module_id'] = module_id
-
-    # 如果没有任何参数提供，则返回全部记录
-    # TODO: 做分页操作 limit page
-    if not filters:
-        hosts = Host.objects.all()
+        hosts = Module.objects.get(module_id=module_id).hosts.all()
+    elif set_id:
+        modules = Set.objects.get(set_id=set_id).modules.all()
+        hosts = Host.objects.filter(modules__in=modules).order_by('host_id').distinct()
+    elif business_id:
+        sets = Business.objects.get(biz_id=business_id).sets.all()
+        modules = Module.objects.filter(set__in=sets)
+        hosts = Host.objects.filter(modules__in=modules).order_by('host_id').distinct()
     else:
-        # 根据过滤字典查询相应的记录
-        hosts = Host.objects.filter(**filters)
+        hosts = Host.objects.all()
+
+    paginator = Paginator(hosts, page_size)       # page_size 为每页的对象数
+    
+    try:
+        # 获取请求的页面
+        page_objects = paginator.page(start)
+    except EmptyPage:
+        # 如果页码超出范围，展示最后一页的结果
+        page_objects = paginator.page(paginator.num_pages)
 
     response_data = {
         "status": "success",
-        'data': list(hosts.values())
+        "total": len(hosts),
+        "count": len(page_objects),
+        "data": list(page_objects.object_list.values()),
     }
     return JsonResponse(response_data)
 
@@ -305,7 +322,7 @@ def backup_records(request):
         "status": "success",
         "total": Backup.objects.count(),
         "count": len(page_objects),
-        'data': list(page_objects.object_list.values())  # 使用 object_list 获取 QuerySet
+        "data": list(page_objects.object_list.values())  # 使用 object_list 获取 QuerySet
     }
     return JsonResponse(response_data)
 
@@ -327,15 +344,26 @@ def test_json(request):
     # for key, value in os.environ.items():
     #     print(f"{key}: {value}")
     # logger.info('hhh')
-    query = {
-        "bk_biz_id": 3,
-    }
-    result = client.cc.search_biz_inst_topo(**query)
-    from django.conf import settings
+    # query = {
+    #     "bk_biz_id": 3,
+    # }
+    # result = client.cc.search_biz_inst_topo(**query)
+    # 创建一个 Version 对象
+    # from .models import Version
+    # version = Version.objects.create()
+    # from django.conf import settings
+    bk_token = request.COOKIES["bk_token"]
+    # 同步
+    # pull_cc_data_new(bk_token=bk_token)
+
+    # 输出拓扑结构
+
+    
+
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/',
-        'user': result["data"]
+        'topo': get_topo()
     }
 
     return JsonResponse(data)

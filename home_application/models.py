@@ -13,22 +13,7 @@ specific language governing permissions and limitations under the License.
 
 from django.db import models
 import django.utils.timezone as timezone
-
-
-class Host(models.Model):
-    biz_name = models.CharField(max_length=100, default='')
-    biz_id = models.IntegerField()
-    set_id = models.IntegerField()
-    set_name = models.CharField(max_length=100, default='')
-    module_id = models.IntegerField()
-    module_name = models.CharField(max_length=100, default='')
-    host_id = models.IntegerField(unique=True)
-    host_name = models.CharField(max_length=100, default='')
-    host_innerip = models.CharField(max_length=100, default='')
-    host_outerip = models.CharField(max_length=100, default='')
-    operator = models.CharField(max_length=100, default='')
-    bak_operator = models.CharField(max_length=100, default='')
-    cloud_vendor = models.CharField(max_length=100, default='')
+from enum import Enum
 
 
 class Backup(models.Model):
@@ -40,3 +25,52 @@ class Backup(models.Model):
     backup_files = models.CharField('备份文件名', max_length=100, default='')
     job_link = models.CharField('JOB链接', max_length=100, default='')
     job_instance_id = models.CharField('job_instance_id', max_length=100, default='')
+
+
+class Version(models.Model):
+    class StatusEnum(Enum):
+        NOT_STARTED = 'Not Started'
+        SYNCING = 'Syncing'
+        FAIL = 'Fail'
+        SUCCESS = 'Success'
+
+    sync_time = models.DateTimeField('同步时间', default=timezone.now)
+    STATUS_CHOICES = [(status.name, status.value) for status in StatusEnum]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=StatusEnum.NOT_STARTED.name)
+
+    def __str__(self):
+        return f"{self.id} - {self.status}"
+
+
+class Host(models.Model):
+    host_id = models.IntegerField(unique=True)
+    host_name = models.CharField(max_length=100, default='')
+    host_innerip = models.CharField(max_length=100, default='')
+    host_outerip = models.CharField(max_length=100, default='')
+    operator = models.CharField(max_length=100, default='')
+    bak_operator = models.CharField(max_length=100, default='')
+    cloud_vendor = models.CharField(max_length=100, default='')
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, related_name='hosts')
+
+
+class Business(models.Model):
+    biz_name = models.CharField(max_length=100, default='')
+    biz_id = models.IntegerField(unique=True)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, related_name='businesses')
+
+
+class Set(models.Model):
+    set_name = models.CharField(max_length=100, default='')
+    set_id = models.IntegerField(unique=True)
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name='sets')
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, related_name='sets')
+
+
+class Module(models.Model):
+    module_name = models.CharField(max_length=100, default='')
+    module_id = models.IntegerField(unique=True)
+    set = models.ForeignKey(Set, on_delete=models.CASCADE, related_name='modules')
+    hosts = models.ManyToManyField(Host, related_name='modules')
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, related_name='modules')
+
+
