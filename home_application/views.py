@@ -17,7 +17,10 @@ from blueapps.account.decorators import login_exempt
 from blueking.component.shortcuts import get_client_by_request
 from .models import TestModel, Host
 from django.http import JsonResponse
-from .celery_tasks import pull_cc_data, async_pull_cmdb
+from .celery_tasks import async_pull_cmdb
+import redis
+from datetime import datetime
+import os
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -45,20 +48,33 @@ def contact(request):
 
 def sync_cmdb(request):
     """
-    用于同步cmdb数据库数据, 后面需要实现成 celery 异步任务
+    用于同步cmdb数据库数据
     """
-    # 同步实现
-    # pull_cc_data(request)
+    bk_token = request.COOKIES["bk_token"]
+    if bk_token is None:
+        data = {"status": "not login yet"}
+        return JsonResponse(data)
 
-    # celery 异步实现
-    async_pull_cmdb(request)
+    REDIS_HOST = os.environ.get('REDIS_HOST')
+    REDIS_PORT = int(os.environ.get('REDIS_PORT'))
+    REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD')
+    r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, db=0)
+    lock_key = 'celery_pull_cmdb'
+    status = r.get(lock_key)
 
-    data = {"status": "add task"}
-
+    if status is None:
+        # 设置标志
+        current_time = datetime.now().strftime(r'%Y-%m-%d %H:%M:%S')
+        r.set(lock_key, current_time, ex=100)
+        # celery 异步拉取数据
+        async_pull_cmdb.delay(bk_token)
+        data = {"status": "start sync"}
+    else:
+        data = {"status": "syncing", "timestamp": status.decode('utf-8')}
+        
     return JsonResponse(data)
 
 
-@login_exempt
 def get_business(request):
     """
     获取所有业务
@@ -69,7 +85,6 @@ def get_business(request):
     return JsonResponse(data)
 
 
-@login_exempt
 def get_sets_by_biz(request):
     """
     获取业务下的集群
@@ -88,7 +103,6 @@ def get_sets_by_biz(request):
         return JsonResponse({'error': 'Missing business parameter'}, status=400)
 
 
-@login_exempt
 def get_modules_by_set(request):
     """
     获取集群下的模块
@@ -108,7 +122,6 @@ def get_modules_by_set(request):
         return JsonResponse({'error': 'Missing set parameter'}, status=400)
 
 
-@login_exempt
 def get_hosts(request):
     """
     获取主机列表
@@ -131,6 +144,7 @@ def get_hosts(request):
         filters['module_id'] = module_id
 
     # 如果没有任何参数提供，则返回全部记录
+    # TODO: 做分页操作 limit page
     if not filters:
         hosts = Host.objects.all()
     else:
@@ -144,7 +158,6 @@ def get_hosts(request):
     return JsonResponse(response_data)
 
 
-@login_exempt
 def get_host_info(request):
     """
     获取主机详细信息
@@ -163,9 +176,19 @@ def test_json(request):
     测试数据
     """
 
-    from home_application.celery_tasks import async_task
-    task_id = async_task.delay(1, 2)
-    
+    # from home_application.celery_tasks import async_task
+    # task_id = async_task.delay(1, 2)
+
+    # client = get_client_by_request(request)
+    # biz_result = client.cc.search_business()
+    # test_result = biz_result["data"]["info"][3]["operator"]
+    # print(test_result == '')
+    # import os
+    # for key, value in os.environ.items():
+    #     print(f"{key}: {value}")
+    import logging
+    logger = logging.getLogger('my_log')
+    logger.info('help')
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/'
