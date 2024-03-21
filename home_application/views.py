@@ -338,6 +338,24 @@ def topo_tree(request):
     return JsonResponse(data)
 
 
+@login_exempt
+def iam_business(request):
+    resources = {
+        "code": 0,
+        "message": "",
+        "data": {
+            "count": 100,
+            "results": [
+                {"id": "biz_1", "display_name": "金融云业务系统"},
+                {"id": "biz_2", "display_name": "demo体验业务"},
+                {"id": "biz_3", "display_name": "银行核心系统"},
+                {"id": "biz_4", "display_name": "直播课-教学专用"},
+            ]
+        }
+    }
+    return JsonResponse(resources)
+
+
 # @login_exempt
 def test_json(request):
     """
@@ -363,18 +381,19 @@ def test_json(request):
     # from .models import Version
     # version = Version.objects.create()
     # from django.conf import settings
-    bk_token = request.COOKIES["bk_token"]
+    # bk_token = request.COOKIES["bk_token"]
     # 同步
-    pull_cc_data_new(bk_token=bk_token)
+    # pull_cc_data_new(bk_token=bk_token)
 
     # 输出拓扑结构
 
-    
+    from .utils import Permission
+    result = Permission().is_super_user(request.user.username)
 
     data = {
         'web': 'baidu',
         'url': 'https://baidu.com/',
-        'topo': get_topo()
+        'iam': result
     }
 
     return JsonResponse(data)

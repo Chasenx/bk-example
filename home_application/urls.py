@@ -31,6 +31,7 @@ urlpatterns = (
     url(r'^backup-files$', views.backup_files),
     url(r'^backup-records$', views.backup_records),
     url(r'^topo$', views.topo_tree),
+    url(r'^iam/api/v1/business/$', views.iam_business),
 )
 
 # urlpatterns = [
