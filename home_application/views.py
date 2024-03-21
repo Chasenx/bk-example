@@ -15,6 +15,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from blueapps.account.decorators import login_exempt
+from django.views.decorators.csrf import csrf_exempt
 from blueking.component.shortcuts import get_client_by_request
 from .models import Host, Backup, Business, Set, Module, Version
 from django.http import JsonResponse
@@ -339,6 +340,7 @@ def topo_tree(request):
 
 
 @login_exempt
+@csrf_exempt
 def iam_business(request):
     resources = {
         "code": 0,
