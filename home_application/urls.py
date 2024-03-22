@@ -18,8 +18,8 @@ from . import views
 # example
 urlpatterns = (
     url(r"^$", views.home),
-    url(r"^dev-guide/$", views.dev_guide),
-    url(r"^contact/$", views.contact),
+    url(r"^search/$", views.home),
+    url(r"^backup/$", views.home),
     url(r'^test-json/$', views.test_json),
     url(r'^sync-cmdb/$', views.sync_cmdb),
     url(r'^business/$', views.get_business),
@@ -27,6 +27,11 @@ urlpatterns = (
     url(r'^module$', views.get_modules_by_set),
     url(r'^hosts$', views.get_hosts),
     url(r'^host-info$', views.get_host_info),
+    url(r'^search-files$', views.search_files),
+    url(r'^backup-files$', views.backup_files),
+    url(r'^backup-records$', views.backup_records),
+    url(r'^topo$', views.topo_tree),
+    url(r'^iam/api/v1/business/$', views.iam_business),
 )
 
 # urlpatterns = [

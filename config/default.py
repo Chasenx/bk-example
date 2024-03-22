@@ -171,3 +171,7 @@ if locals().get("DISABLED_APPS"):
 TEMPLATES[0]['DIRS'] += (
     os.path.join(BASE_DIR, 'static', 'dist'),
 )
+
+SEARCH_JOB_PLAN_ID = 1000428
+BACKUP_JOB_PLAN_ID = 1000429
+JOB_LINK_PREFIX = "https://job.ce.bktencent.com/biz/3/execute/task/"
