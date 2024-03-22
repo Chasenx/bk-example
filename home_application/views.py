@@ -168,8 +168,42 @@ def get_hosts(request):
         "count": len(page_objects),
         "data": list(page_objects.object_list.values()),
     }
-    return JsonResponse(response_data)
 
+    # 有 module_id 添加对应信息
+    if module_id:
+        module = Module.objects.get(module_id=module_id)
+        if module:
+            module_name = module.module_name
+            set_name = module.set.set_name
+            biz_name = module.set.business.biz_name
+            for host in response_data["data"]:
+                host["module_name"] = module_name
+                host["set_name"] = set_name
+                host["biz_name"] = biz_name
+            return JsonResponse(response_data)
+
+    # 有 set_id 添加对应信息
+    if set_id:
+        set = Set.objects.get(set_id=set_id)
+        if set:
+            set_name = set.set_name
+            biz_name = set.business.biz_name
+            for host in response_data["data"]:
+                host["set_name"] = set_name
+                host["biz_name"] = biz_name
+            return JsonResponse(response_data)
+        
+    # 有 biz_id 添加对应信息
+    if business_id:
+        business = Business.objects.get(biz_id=business_id)
+        if business:
+            biz_name = business.biz_name
+            for host in response_data["data"]:
+                host["biz_name"] = biz_name
+            return JsonResponse(response_data)
+
+    return JsonResponse(response_data)
+    
 
 def get_host_info(request):
     """
