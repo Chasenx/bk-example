@@ -1,8 +1,13 @@
 from django.conf import settings
 from iam import IAM, Action, Request, Resource, Subject
-from iam.apply.models import (ActionWithoutResources, ActionWithResources,
-                              Application, RelatedResourceType,
-                              ResourceInstance, ResourceNode)
+from iam.apply.models import (
+    ActionWithoutResources,
+    ActionWithResources,
+    Application,
+    RelatedResourceType,
+    ResourceInstance,
+    ResourceNode,
+)
 
 SYSTEM_ID = settings.APP_CODE
 APP_CODE = settings.APP_CODE
@@ -11,7 +16,7 @@ BK_IAM_HOST = settings.BK_IAM_HOST
 BK_PAAS_HOST = settings.BK_URL
 
 
-class Permission(object):
+class Permission:
     def __init__(self):
         self._iam = IAM(APP_CODE, APP_SECRET, BK_IAM_HOST, BK_PAAS_HOST)
 
@@ -42,16 +47,7 @@ class Permission(object):
         request = self._make_request_without_resources(username, "super_user_iam")
         return self._iam.is_allowed(request)
 
-    def allowed_develop_app(self, username, app_code):
-        """
-        带资源的操作
-        """
-        r = Resource(SYSTEM_ID, "app", app_code, {})
-        resources = [r]
-        request = self._make_request_with_resources(username, "develop_app", resources)
-        return self._iam.is_allowed(request)
-
-    def allowed_access_business(self, username, biz_id):
+    def allowed_access_bu_make_request_without_resourcessiness(self, username, biz_id):
         """
         访问业务权限
         """
@@ -60,11 +56,8 @@ class Permission(object):
         request = self._make_request_with_resources(username, "access_biz", resources)
         return self._iam.is_allowed(request)
 
-    def get_super_user_iam_url():
-        pass
 
-
-class PermissionSU(object):
+class PermissionSU:
     def __init__(self):
         self._iam = IAM(APP_CODE, APP_SECRET, BK_IAM_HOST, BK_PAAS_HOST)
 
@@ -76,19 +69,13 @@ class PermissionSU(object):
         application = Application(SYSTEM_ID, actions)
         return application
 
-    def make_resource_application(
-        self, action_id, resource_type, resource_id, resource_name
-    ):
+    def make_resource_application(self, action_id, resource_type, resource_id, resource_name):
         # 1. make application
         # 这里支持带层级的资源, 例如 biz: 1/set: 2/host: 3
         # 如果不带层级, list中只有对应资源实例
-        instance = ResourceInstance(
-            [ResourceNode(resource_type, resource_id, resource_name)]
-        )
+        instance = ResourceInstance([ResourceNode(resource_type, resource_id, resource_name)])
         # 同一个资源类型可以包含多个资源
-        related_resource_type = RelatedResourceType(
-            SYSTEM_ID, resource_type, [instance]
-        )
+        related_resource_type = RelatedResourceType(SYSTEM_ID, resource_type, [instance])
         action = ActionWithResources(action_id, [related_resource_type])
 
         actions = [
