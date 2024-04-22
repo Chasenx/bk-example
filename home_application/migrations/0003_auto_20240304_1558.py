@@ -6,29 +6,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('home_application', '0002_host'),
+        ("home_application", "0002_host"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='host',
-            old_name='bk_bak_operator',
-            new_name='bak_operator',
+            model_name="host",
+            old_name="bk_bak_operator",
+            new_name="bak_operator",
         ),
         migrations.AddField(
-            model_name='host',
-            name='module_id',
+            model_name="host",
+            name="module_id",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='host',
-            name='module_name',
-            field=models.CharField(default='', max_length=100),
+            model_name="host",
+            name="module_name",
+            field=models.CharField(default="", max_length=100),
         ),
         migrations.AlterField(
-            model_name='host',
-            name='host_id',
+            model_name="host",
+            name="host_id",
             field=models.IntegerField(unique=True),
         ),
     ]

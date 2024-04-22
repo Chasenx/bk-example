@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
 Edition) available.
@@ -95,9 +94,7 @@ FRONTEND_BACKEND_SEPARATION = True
 CELERYD_CONCURRENCY = os.getenv("BK_CELERYD_CONCURRENCY", 2)  # noqa
 
 # CELERY 配置，申明任务的文件路径，即包含有 @task 装饰器的函数文件
-CELERY_IMPORTS = (
-    'home_application.celery_tasks'
-)
+CELERY_IMPORTS = "home_application.celery_tasks"
 
 # log level setting
 LOG_LEVEL = "INFO"
@@ -127,8 +124,8 @@ TIME_ZONE = "Asia/Shanghai"
 LANGUAGE_CODE = "zh-hans"
 
 LANGUAGES = (
-    ("en", u"English"),
-    ("zh-hans", u"简体中文"),
+    ("en", "English"),
+    ("zh-hans", "简体中文"),
 )
 
 """
@@ -164,13 +161,9 @@ if locals().get("DISABLED_APPS"):
     for _app, _key in itertools.product(DISABLED_APPS, _keys):
         if locals().get(_key) is None:
             continue
-        locals()[_key] = tuple(
-            [_item for _item in locals()[_key] if not _item.startswith(_app + ".")]
-        )
+        locals()[_key] = tuple([_item for _item in locals()[_key] if not _item.startswith(_app + ".")])
 
-TEMPLATES[0]['DIRS'] += (
-    os.path.join(BASE_DIR, 'static', 'dist'),
-)
+TEMPLATES[0]["DIRS"] += (os.path.join(BASE_DIR, "static", "dist"),)
 
 SEARCH_JOB_PLAN_ID = 1000428
 BACKUP_JOB_PLAN_ID = 1000429

@@ -1,7 +1,9 @@
-from django.conf import settings
 import logging
 
-logger = logging.getLogger('app')
+from django.conf import settings
+
+logger = logging.getLogger("app")
+
 
 def create_search_files_job(client, dir, suffix, hosts):
     """
@@ -19,21 +21,10 @@ def create_search_files_job(client, dir, suffix, hosts):
         "bk_scope_id": "3",
         "job_plan_id": settings.SEARCH_JOB_PLAN_ID,
         "global_var_list": [
-            {
-                "name": "host",
-                "server": {
-                    "ip_list": [{"bk_cloud_id": 0, "ip": ip} for ip in hosts]
-                }
-            },
-            {
-                "name": "dir",
-                "value": dir
-            },
-            {
-                "name": "suffix",
-                "value": suffix
-            }
-        ]
+            {"name": "host", "server": {"ip_list": [{"bk_cloud_id": 0, "ip": ip} for ip in hosts]}},
+            {"name": "dir", "value": dir},
+            {"name": "suffix", "value": suffix},
+        ],
     }
     try:
         result = client.jobv3.execute_job_plan(**query)
@@ -57,7 +48,7 @@ def check_job_status(client, job_instance_id):
     :returns status: Boolean
     """
     query = {
-        "bk_scope_type": "biz", 
+        "bk_scope_type": "biz",
         "bk_scope_id": "3",
         "job_instance_id": job_instance_id,
     }
@@ -83,7 +74,7 @@ def get_step_instance_id(client, job_instance_id):
     :returns step_instance_id: long
     """
     query = {
-        "bk_scope_type": "biz", 
+        "bk_scope_type": "biz",
         "bk_scope_id": "3",
         "job_instance_id": job_instance_id,
     }
@@ -112,11 +103,11 @@ def get_job_result(client, job_instance_id, step_instance_id, host_id):
     :returns result: str
     """
     query = {
-        "bk_scope_type": "biz", 
+        "bk_scope_type": "biz",
         "bk_scope_id": "3",
         "job_instance_id": job_instance_id,
         "step_instance_id": step_instance_id,
-        "bk_host_id": host_id
+        "bk_host_id": host_id,
     }
 
     try:
@@ -142,19 +133,19 @@ def parse_log_data(log_data, ip, dir):
     """
     file_names = []
     file_size = []
-    log_data = log_data.split('\n')[1:] # 取出第一行内容
+    log_data = log_data.split("\n")[1:]  # 取出第一行内容
 
     for row in log_data:
-        if row and row != '0':        # 排除空字符串和无搜索匹配结果的情况
+        if row and row != "0":  # 排除空字符串和无搜索匹配结果的情况
             element = row.split()
             file_names.append(element[8])
             file_size.append(int(element[4]))
     result = {
         "ip": ip,
-        "filenames": ', '.join(file_names),
+        "filenames": ", ".join(file_names),
         "size": sum(file_size),
         "dir": dir,
-        "file_count": len(file_names)
+        "file_count": len(file_names),
     }
     return result
 
@@ -175,21 +166,10 @@ def create_backup_files_job(client, dir, files, hosts):
         "bk_scope_id": "3",
         "job_plan_id": settings.BACKUP_JOB_PLAN_ID,
         "global_var_list": [
-            {
-                "name": "host",
-                "server": {
-                    "ip_list": [{"bk_cloud_id": 0, "ip": ip} for ip in hosts]
-                }
-            },
-            {
-                "name": "dir",
-                "value": dir
-            },
-            {
-                "name": "files",
-                "value": files
-            }
-        ]
+            {"name": "host", "server": {"ip_list": [{"bk_cloud_id": 0, "ip": ip} for ip in hosts]}},
+            {"name": "dir", "value": dir},
+            {"name": "files", "value": files},
+        ],
     }
     try:
         result = client.jobv3.execute_job_plan(**query)
@@ -203,4 +183,3 @@ def create_backup_files_job(client, dir, files, hosts):
         return job_instance_id
     else:
         return None
-

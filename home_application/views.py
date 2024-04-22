@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
 Edition) available.
@@ -25,14 +24,24 @@ from django.views.decorators.csrf import csrf_exempt
 
 from blueking.component.shortcuts import get_client_by_request
 
-from .celery_tasks import (async_create_backup_files_job, async_pull_cmdb,
-                           get_topo, pull_cc_data_new)
-from .job import (check_job_status, create_backup_files_job,
-                  create_search_files_job, get_job_result,
-                  get_step_instance_id, parse_log_data)
+from .celery_tasks import (
+    async_create_backup_files_job,
+    async_pull_cmdb,
+    get_topo,
+    pull_cc_data_new,
+)
+from .job import (
+    check_job_status,
+    create_backup_files_job,
+    create_search_files_job,
+    get_job_result,
+    get_step_instance_id,
+    parse_log_data,
+)
 from .models import Backup, Business, Host, Module, Set, Version
 
 logger = logging.getLogger("app")
+
 
 # 开发框架中通过中间件默认是需要登录态的，如有不需要登录的，可添加装饰器login_exempt
 # 装饰器引入 from blueapps.account.decorators import login_exempt
@@ -93,9 +102,7 @@ def get_sets_by_biz(request):
     if "business" in request.GET:
         business_id = request.GET["business"]
         # 判断是不是数字 # TODO
-        sets = Business.objects.get(biz_id=business_id).sets.values(
-            "set_id", "set_name"
-        )
+        sets = Business.objects.get(biz_id=business_id).sets.values("set_id", "set_name")
         response_data = {"status": "success", "data": list(sets) if list(sets) else []}
         return JsonResponse(response_data)
     else:
@@ -110,9 +117,7 @@ def get_modules_by_set(request):
     if "set" in request.GET:
         set_id = request.GET["set"]
 
-        modules = Set.objects.get(set_id=set_id).modules.values(
-            "module_id", "module_name"
-        )
+        modules = Set.objects.get(set_id=set_id).modules.values("module_id", "module_name")
         response_data = {"status": "success", "data": list(modules)}
         return JsonResponse(response_data)
     else:
@@ -192,7 +197,7 @@ def get_hosts(request):
                 host["set_name"] = set_name
                 host["biz_name"] = biz_name
             return JsonResponse(response_data)
-        
+
     # 有 biz_id 添加对应信息
     if business_id:
         business = Business.objects.get(biz_id=business_id)
@@ -203,7 +208,7 @@ def get_hosts(request):
             return JsonResponse(response_data)
 
     return JsonResponse(response_data)
-    
+
 
 def get_host_info(request):
     """
@@ -260,9 +265,7 @@ def search_files(request):
             time.sleep(0.5)
 
         # 获取 step_instance_id
-        step_instance_id = get_step_instance_id(
-            client=client, job_instance_id=job_instance_id
-        )
+        step_instance_id = get_step_instance_id(client=client, job_instance_id=job_instance_id)
 
         # 获取结果
         file_info = []
@@ -323,9 +326,7 @@ def backup_files(request):
 
         # 创建文件备份任务 (异步实现)
         username = request.user.username
-        job_instance_id = async_create_backup_files_job.delay(
-            bk_token, dir, files, hosts, username
-        )
+        job_instance_id = async_create_backup_files_job.delay(bk_token, dir, files, hosts, username)
 
         return JsonResponse({"message": "add backup task"})
 
@@ -356,9 +357,7 @@ def backup_records(request):
         "status": "success",
         "total": Backup.objects.count(),
         "count": len(page_objects),
-        "data": list(
-            page_objects.object_list.values()
-        ),  # 使用 object_list 获取 QuerySet
+        "data": list(page_objects.object_list.values()),  # 使用 object_list 获取 QuerySet
     }
     return JsonResponse(response_data)
 
@@ -383,8 +382,8 @@ def iam_business(request):
         "message": "",
         "data": {
             "count": len(business),
-            "results": [{"id": f'{b.biz_id}', "display_name": b.biz_name} for b in business],
-        }
+            "results": [{"id": f"{b.biz_id}", "display_name": b.biz_name} for b in business],
+        },
     }
     return JsonResponse(resources)
 
@@ -422,9 +421,9 @@ def test_json(request):
 
     # 鉴权（超级管理员和业务权限）
     from .utils import Permission, PermissionSU
+
     # result = Permission().is_super_user(request.user.username)
     # result = Permission().allowed_access_business(request.user.username, "3")
-
     # 获取申请权限 URL
     perission_su = PermissionSU()
     access_application = perission_su.make_no_resource_application("super_user_iam")

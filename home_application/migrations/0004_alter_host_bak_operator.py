@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('home_application', '0003_auto_20240304_1558'),
+        ("home_application", "0003_auto_20240304_1558"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='host',
-            name='bak_operator',
+            model_name="host",
+            name="bak_operator",
             field=models.CharField(default=None, max_length=100),
         ),
     ]

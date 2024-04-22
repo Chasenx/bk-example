@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
 """Django project settings
 """
-
 
 try:
     from django.conf import settings

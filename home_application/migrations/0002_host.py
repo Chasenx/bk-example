@@ -6,25 +6,25 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('home_application', '0001_initial'),
+        ("home_application", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Host',
+            name="Host",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('biz_name', models.CharField(default='', max_length=100)),
-                ('biz_id', models.IntegerField()),
-                ('set_id', models.IntegerField()),
-                ('set_name', models.CharField(default='', max_length=100)),
-                ('host_id', models.IntegerField()),
-                ('host_name', models.CharField(default='', max_length=100)),
-                ('host_innerip', models.CharField(default='', max_length=100)),
-                ('host_outerip', models.CharField(default='', max_length=100)),
-                ('operator', models.CharField(default='', max_length=100)),
-                ('bk_bak_operator', models.CharField(default='', max_length=100)),
-                ('cloud_vendor', models.CharField(default='', max_length=100)),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("biz_name", models.CharField(default="", max_length=100)),
+                ("biz_id", models.IntegerField()),
+                ("set_id", models.IntegerField()),
+                ("set_name", models.CharField(default="", max_length=100)),
+                ("host_id", models.IntegerField()),
+                ("host_name", models.CharField(default="", max_length=100)),
+                ("host_innerip", models.CharField(default="", max_length=100)),
+                ("host_outerip", models.CharField(default="", max_length=100)),
+                ("operator", models.CharField(default="", max_length=100)),
+                ("bk_bak_operator", models.CharField(default="", max_length=100)),
+                ("cloud_vendor", models.CharField(default="", max_length=100)),
             ],
         ),
     ]

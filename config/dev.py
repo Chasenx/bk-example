@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Tencent is pleased to support the open source community by making 蓝鲸智云PaaS平台社区版 (BlueKing PaaS Community
 Edition) available.
@@ -10,12 +9,14 @@ Unless required by applicable law or agreed to in writing, software distributed 
 an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 """
-from config import RUN_VER
-from config.default import FRONTEND_BACKEND_SEPARATION
-from blueapps.conf.validators import EnvValidator
-from dotenv import load_dotenv
+
 import os
 
+from blueapps.conf.validators import EnvValidator
+from dotenv import load_dotenv
+
+from config import RUN_VER
+from config.default import FRONTEND_BACKEND_SEPARATION
 
 load_dotenv()
 
