@@ -4,3 +4,13 @@ __pycache__
 .env
 local_settings.py
 local*
+.idea
+
+# Django #
+*.log
+*.pot
+db.sqlite3
+
+.venv
+*.env
+.DS_Store

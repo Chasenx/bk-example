@@ -425,10 +425,14 @@ def test_json(request):
     # result = Permission().is_super_user(request.user.username)
     # result = Permission().allowed_access_business(request.user.username, "3")
     # 获取申请权限 URL
-    perission_su = PermissionSU()
-    access_application = perission_su.make_no_resource_application("super_user_iam")
-    url = perission_su.generate_apply_url(bk_token, access_application)
+    # perission_su = PermissionSU()
+    # access_application = perission_su.make_no_resource_application("super_user_iam")
+    # url = perission_su.generate_apply_url(bk_token, access_application)
 
-    data = {"web": "baidu", "url": "https://baidu.com/", "apply_url": url}
+    bk_token = request.COOKIES["bk_token"]
+    from .celery_tasks import pull_cc_data_new
+    pull_cc_data_new(bk_token)
+
+    data = {"web": "baidu", "url": "https://baidu.com/", "apply_url": 'a'}
 
     return JsonResponse(data)
