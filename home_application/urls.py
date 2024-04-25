@@ -11,10 +11,17 @@ specific language governing permissions and limitations under the License.
 """
 
 from django.conf.urls import url
-from django.urls import path
-
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from . import views
+from .views_drf import BusinessViewSet, HostViewSet, ModuleViewSet, SetViewSet
+
+router = DefaultRouter()
+router.register(r"business", BusinessViewSet)
+router.register(r"set", SetViewSet)
+router.register(r"module", ModuleViewSet)
+router.register(r"host", HostViewSet)
 
 urlpatterns = (
     url(r"^$", views.home),
@@ -32,23 +39,5 @@ urlpatterns = (
     url(r"^backup-records$", views.backup_records),
     url(r"^topo$", views.topo_tree),
     url(r"^iam/api/v1/business/$", views.iam_business),
+    path("api/v1/", include(router.urls)),
 )
-
-# urlpatterns = (
-#     path("/", views.home),
-#     path("search/", views.home),
-#     path("backup/", views.home),
-#     path("test-json/", views.test_json),
-#     path("sync-cmdb/", views.sync_cmdb),
-#     path("business/", views.get_business),
-#     path("set/", views.get_sets_by_biz),
-#     path("module/", views.get_modules_by_set),
-#     path("hosts/", views.get_hosts),
-#     path("host-info/", views.get_host_info),
-#     path("search-files/", views.search_files),
-#     path("backup-files/", views.backup_files),
-#     path("backup-records/", views.backup_records),
-#     path("topo/", views.topo_tree),
-#     path("iam/api/v1/business/", views.iam_business),
-# )
-
