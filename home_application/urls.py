@@ -11,10 +11,18 @@ specific language governing permissions and limitations under the License.
 """
 
 from django.conf.urls import url
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
 from . import views
+from .views_drf import BusinessViewSet, HostViewSet, ModuleViewSet, SetViewSet
 
-# example
+router = DefaultRouter()
+router.register(r"business", BusinessViewSet)
+router.register(r"set", SetViewSet)
+router.register(r"module", ModuleViewSet)
+router.register(r"host", HostViewSet)
+
 urlpatterns = (
     url(r"^$", views.home),
     url(r"^search/$", views.home),
@@ -31,9 +39,5 @@ urlpatterns = (
     url(r"^backup-records$", views.backup_records),
     url(r"^topo$", views.topo_tree),
     url(r"^iam/api/v1/business/$", views.iam_business),
+    path("api/v1/", include(router.urls)),
 )
-
-# urlpatterns = [
-#     url(r'^$', views.hello),
-#     url(r'^test-json/$', views.test_json)
-# ]
